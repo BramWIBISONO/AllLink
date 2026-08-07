@@ -1,0 +1,2041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPI Link Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Primary Colors */
+            --primary: #4F46E5;
+            --primary-light: #EEF2FF;
+            --primary-dark: #4338CA;
+            --secondary: #2F6FDB;
+            
+            /* Status Colors */
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            
+            /* Backgrounds */
+            --bg-body: #F7F8FC;
+            --bg-surface: #FFFFFF;
+            --bg-sidebar: #FFFFFF;
+            --bg-input: #F3F4F6;
+            --bg-hover: #F9FAFB;
+            
+            /* Text Colors */
+            --text-primary: #111827;
+            --text-secondary: #4B5563;
+            --text-tertiary: #9CA3AF;
+            
+            /* Borders */
+            --border-light: #E5E7EB;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
+            
+            /* Metrics */
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 18px;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            
+            /* Transitions */
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0F172A;
+            --bg-surface: #1E293B;
+            --bg-sidebar: #1E293B;
+            --bg-input: #334155;
+            --bg-hover: #334155;
+            
+            --text-primary: #F9FAFB;
+            --text-secondary: #D1D5DB;
+            --text-tertiary: #9CA3AF;
+            
+            --border-light: #334155;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.5;
+            overflow-x: hidden;
+            transition: background-color var(--transition-normal), color var(--transition-normal);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button, input, select {
+            font-family: inherit;
+            border: none;
+            outline: none;
+            background: none;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* Utility Classes */
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .flex-col { flex-direction: column; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        .text-sm { font-size: 0.875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .text-secondary { color: var(--text-secondary); }
+        .hidden { display: none !important; }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, background-color var(--transition-normal);
+            z-index: 40;
+        }
+
+        .sidebar-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .logo svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .logo span {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .logo .sub {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            font-weight: 400;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--border-light);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: var(--text-tertiary);
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-hover);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+        
+        [data-theme="dark"] .nav-item.active {
+            background-color: rgba(79, 70, 229, 0.2);
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .collection-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .collection-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color var(--transition-fast);
+        }
+
+        .collection-item:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .folder-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .add-website-card {
+            margin-top: auto;
+            padding: 1.25rem;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .add-website-card h4 {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+        
+        .add-website-card p {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        .btn-outline-primary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px dashed var(--primary);
+            color: var(--primary);
+            background-color: var(--primary-light);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+
+        [data-theme="dark"] .btn-outline-primary {
+            background-color: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header Styles */
+        .top-header {
+            height: var(--header-height);
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 30;
+            transition: background-color var(--transition-normal);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            padding: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 480px;
+            margin: 0 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            background-color: var(--bg-input);
+            border: 1px solid transparent;
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all var(--transition-fast);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            background-color: var(--bg-surface);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            width: 18px;
+            height: 18px;
+        }
+
+        .search-shortcut {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            padding: 0.1rem 0.4rem;
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            pointer-events: none;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: background-color var(--transition-fast);
+        }
+
+        .icon-btn:hover {
+            background-color: var(--bg-input);
+            color: var(--text-primary);
+        }
+
+        .icon-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: var(--radius-md);
+            transition: background-color var(--transition-fast);
+        }
+        
+        .user-profile:hover {
+            background-color: var(--bg-input);
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        .dashboard-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+        
+        .page-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .page-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .section-header svg {
+            width: 20px;
+            height: 20px;
+            color: var(--primary);
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        /* Grid for App Cards */
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .app-card {
+            background-color: var(--bg-surface);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1rem;
+            transition: all var(--transition-normal);
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .fav-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: var(--text-tertiary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+        
+        .fav-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+
+        .fav-btn.active {
+            color: var(--warning);
+        }
+        
+        .fav-btn.active svg {
+            fill: var(--warning);
+            stroke: var(--warning);
+        }
+        
+        .fav-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .app-icon-wrapper {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        
+        /* Specific App Icon Backgrounds */
+        .app-icon-wrapper.bg-purple { background-color: #F3E8FF; color: #9333EA; }
+        .app-icon-wrapper.bg-orange { background-color: #FFEDD5; color: #EA580C; }
+        .app-icon-wrapper.bg-blue { background-color: #DBEAFE; color: #2563EB; }
+        .app-icon-wrapper.bg-green { background-color: #DCFCE7; color: #16A34A; }
+        .app-icon-wrapper.bg-gray { background-color: #F3F4F6; color: #4B5563; }
+        
+        [data-theme="dark"] .app-icon-wrapper.bg-purple { background-color: rgba(147, 51, 234, 0.2); }
+        [data-theme="dark"] .app-icon-wrapper.bg-orange { background-color: rgba(234, 88, 12, 0.2); }
+        [data-theme="dark"] .app-icon-wrapper.bg-blue { background-color: rgba(37, 99, 235, 0.2); }
+        [data-theme="dark"] .app-icon-wrapper.bg-green { background-color: rgba(22, 163, 74, 0.2); }
+        [data-theme="dark"] .app-icon-wrapper.bg-gray { background-color: rgba(75, 85, 99, 0.2); }
+
+        .app-icon-wrapper svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .app-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            width: 100%;
+        }
+
+        .app-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .app-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 36px;
+        }
+
+        .btn-visit {
+            width: 100%;
+            padding: 0.6rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            color: white;
+            transition: opacity var(--transition-fast);
+        }
+        
+        .btn-visit:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-visit svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .btn-visit.bg-purple { background-color: #6366F1; }
+        .btn-visit.bg-orange { background-color: #F97316; }
+        .btn-visit.bg-blue { background-color: #3B82F6; }
+        .btn-visit.bg-green { background-color: #10B981; }
+        .btn-visit.bg-gray { background-color: #6B7280; }
+
+        .list-header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .select-filter {
+            padding: 0.5rem 2rem 0.5rem 1rem;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.25rem;
+            cursor: pointer;
+        }
+        
+        .btn-sort {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .table-container {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .app-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .app-table th {
+            padding: 1rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-light);
+            background-color: var(--bg-hover);
+        }
+
+        .app-table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
+        }
+
+        .app-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .app-table tbody tr {
+            transition: background-color var(--transition-fast);
+        }
+
+        .app-table tbody tr:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .cell-website {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .list-icon-wrapper {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .list-icon-wrapper svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .list-info-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .list-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+        
+        .list-url {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+        
+        .cell-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .tag {
+            display: inline-flex;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .tag.bg-purple { background-color: #F3E8FF; color: #9333EA; }
+        .tag.bg-orange { background-color: #FFEDD5; color: #EA580C; }
+        .tag.bg-blue { background-color: #DBEAFE; color: #2563EB; }
+        .tag.bg-green { background-color: #DCFCE7; color: #16A34A; }
+        .tag.bg-gray { background-color: #F3F4F6; color: #4B5563; }
+        
+        [data-theme="dark"] .tag.bg-purple { background-color: rgba(147, 51, 234, 0.1); color: #C084FC; }
+        [data-theme="dark"] .tag.bg-orange { background-color: rgba(234, 88, 12, 0.1); color: #FB923C; }
+        [data-theme="dark"] .tag.bg-blue { background-color: rgba(37, 99, 235, 0.1); color: #60A5FA; }
+        [data-theme="dark"] .tag.bg-green { background-color: rgba(22, 163, 74, 0.1); color: #4ADE80; }
+        [data-theme="dark"] .tag.bg-gray { background-color: rgba(75, 85, 99, 0.2); color: #9CA3AF;}
+        
+        .cell-time {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .cell-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+            background-color: transparent;
+            transition: all var(--transition-fast);
+        }
+        
+        .action-btn:hover {
+            background-color: var(--bg-hover);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .action-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            background-color: var(--bg-surface);
+            border-radius: var(--radius-xl);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--shadow-lg);
+            transform: scale(0.95) translateY(20px);
+            transition: all var(--transition-normal);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .btn-close {
+            color: var(--text-tertiary);
+            transition: color var(--transition-fast);
+        }
+
+        .btn-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: var(--bg-input);
+            border: 1px solid transparent;
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all var(--transition-fast);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            background-color: var(--bg-surface);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            background-color: var(--bg-hover);
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-input);
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: 1px solid var(--primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 200;
+        }
+
+        .toast {
+            background-color: var(--bg-surface);
+            border-left: 4px solid var(--primary);
+            color: var(--text-primary);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        .toast.warning { border-color: var(--warning); }
+
+        @media (max-width: 1024px) {
+            .app-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                height: 100vh;
+                box-shadow: var(--shadow-lg);
+            }
+            .sidebar.open {
+                left: 0;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .search-container {
+                display: none; /* Hide in header on mobile, maybe put in a modal or expandable area */
+            }
+            .top-header {
+                padding: 0 1rem;
+            }
+            .dashboard-content {
+                padding: 1.5rem 1rem;
+            }
+            
+            /* Responsive Table (stack rows) */
+            .app-table thead {
+                display: none;
+            }
+            .app-table, .app-table tbody, .app-table tr, .app-table td {
+                display: block;
+                width: 100%;
+            }
+            .app-table tr {
+                margin-bottom: 1rem;
+                border: 1px solid var(--border-light);
+                border-radius: var(--radius-md);
+                padding: 1rem;
+            }
+            .app-table td {
+                padding: 0.5rem 0;
+                border-bottom: none;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .cell-website {
+                margin-bottom: 0.5rem;
+                width: 100%;
+            }
+            .cell-desc {
+                display: none; /* Hide desc on mobile list view for space */
+            }
+            .cell-actions {
+                justify-content: flex-start;
+                margin-top: 0.5rem;
+                width: 100%;
+            }
+            .list-header-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .filters {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+        
+        /* Opening Animation overlay */
+        .opening-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--primary);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .opening-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-tertiary);
+        }
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            stroke-width: 1;
+        }
+
+        /* Footer inline */
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--text-tertiary);
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>
+                        SPI Link Hub
+                        <span class="sub">One Place, All Links</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="sidebar-content">
+                <ul class="nav-menu">
+                    <li class="nav-item active" data-view="dashboard">
+                        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        Dashboard
+                    </li>
+                    <li class="nav-item" data-view="all">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                        All Websites
+                    </li>
+                    <li class="nav-item" data-view="favorites">
+                        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        Favorites
+                    </li>
+                    <li class="nav-item" data-view="recent">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Recently Opened
+                    </li>
+                </ul>
+
+                <div>
+                    <div class="nav-section-title">
+                        COLLECTIONS
+                    </div>
+                    <ul class="collection-list">
+                        <li class="collection-item" data-filter="System">
+                            <span class="folder-icon bg-purple" style="background-color: var(--primary); display:inline-block"></span> SPI Main
+                        </li>
+                        <li class="collection-item" data-filter="Security">
+                            <span class="folder-icon bg-blue" style="background-color: var(--secondary); display:inline-block"></span> Tools
+                        </li>
+                        <li class="collection-item" data-filter="Cloud Storage">
+                            <span class="folder-icon bg-green" style="background-color: var(--success); display:inline-block"></span> Documents
+                        </li>
+                        <li class="collection-item" data-filter="Website">
+                            <span class="folder-icon bg-orange" style="background-color: var(--warning); display:inline-block"></span> Other Links
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="add-website-card">
+                    <div>
+                        <h4>Tambah Website</h4>
+                        <p>Simpan link baru ke dashboard</p>
+                    </div>
+                    <button class="btn-outline-primary" id="btn-open-add-modal">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add Website
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <button class="mobile-menu-btn" id="btn-toggle-sidebar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+
+                <div class="search-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" class="search-input" id="search-input" placeholder="Search website...">
+                    <span class="search-shortcut">Ctrl K</span>
+                </div>
+
+                <div class="header-actions">
+                    <button class="icon-btn" id="btn-toggle-theme" title="Toggle Dark Mode (Ctrl+D)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+                    
+                    <div class="user-profile">
+                        <div class="avatar">AW</div>
+                        <div class="user-info hidden sm:flex">
+                            <span class="user-name">Abraham</span>
+                            <span class="user-role">Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Scrollable Content Area -->
+            <div class="dashboard-content" id="main-scroll-area">
+                
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Akses cepat ke semua website penting SPI</p>
+                </div>
+
+                <!-- Favorites Section -->
+                <section id="section-favorites">
+                    <div class="section-header">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        <h2 class="section-title">Website Favorites</h2>
+                    </div>
+                    <div class="app-grid" id="favorites-grid">
+                        <!-- Cards injected by JS -->
+                    </div>
+                </section>
+
+                <!-- All Websites List Section -->
+                <section id="section-all-list">
+                    <div class="list-header-controls">
+                        <div class="section-header" style="margin:0;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                            <h2 class="section-title">All Websites</h2>
+                        </div>
+                        
+                        <div class="filters">
+                            <select class="select-filter" id="category-filter">
+                                <option value="All">Semua Kategori</option>
+                                <!-- Options injected by JS -->
+                            </select>
+                            <button class="btn-sort" id="btn-sort">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"></path></svg>
+                                A to Z
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="app-table">
+                            <thead>
+                                <tr>
+                                    <th>Website</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Last Opened</th>
+                                    <th style="text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-websites-list">
+                                <!-- List items injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <footer class="footer">
+                    &copy; 2026 Sekolah Programming Indonesia (SPI). All rights reserved.
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Website Modal -->
+    <div class="modal-overlay" id="app-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Add New Website</h3>
+                <button class="btn-close" id="btn-close-modal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="app-form">
+                    <input type="hidden" id="app-id">
+                    
+                    <div class="form-group">
+                        <label for="app-name">Website Name</label>
+                        <input type="text" id="app-name" class="form-control" placeholder="e.g., Internal Wiki" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="app-url">URL</label>
+                        <input type="url" id="app-url" class="form-control" placeholder="https://" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="app-desc">Description</label>
+                        <input type="text" id="app-desc" class="form-control" placeholder="Brief description of the application">
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="form-group w-full">
+                            <label for="app-category">Category</label>
+                            <select id="app-category" class="form-control" required>
+                                <option value="System">System</option>
+                                <option value="Inventory">Inventory</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Security">Security</option>
+                                <option value="Website">Website</option>
+                                <option value="Cloud Storage">Cloud Storage</option>
+                                <option value="Teaching">Teaching</option>
+                                <option value="Development">Development</option>
+                                <option value="Documentation">Documentation</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        <div class="form-group w-full">
+                            <label for="app-color">Theme Color</label>
+                            <select id="app-color" class="form-control">
+                                <option value="purple">Purple</option>
+                                <option value="orange">Orange</option>
+                                <option value="blue">Blue</option>
+                                <option value="green">Green</option>
+                                <option value="gray">Gray</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-save-modal">Save Website</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Opening Animation Overlay -->
+    <div class="opening-overlay" id="opening-overlay">
+        <div class="spinner"></div>
+        <h2 id="opening-text" style="font-weight: 500;">Launching Application...</h2>
+        <p style="opacity: 0.8; font-size: 0.875rem; margin-top: 0.5rem;" id="opening-url">Redirecting</p>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        /**
+         * SPI Link Hub - Core Application Logic
+         * Modular structure without external dependencies.
+         */
+
+        // Initial Seed Data required by prompt
+        const defaultApps = [
+            {
+                id: 'app_1',
+                name: 'Pass Safe SPI',
+                description: 'Password Management System',
+                category: 'Security',
+                url: 'https://bramwibisono.github.io/PassSafeSPI/dashboard.html',
+                color: 'purple',
+                icon: 'lock'
+            },
+            {
+                id: 'app_2',
+                name: 'Inventory SPI',
+                description: 'Inventory Management System',
+                category: 'Inventory',
+                url: 'https://bramastowibisono4-stack.github.io/RukoTamsur/',
+                color: 'orange',
+                icon: 'box'
+            },
+            {
+                id: 'app_3',
+                name: 'SPI Digital System',
+                description: 'SPI Digital System',
+                category: 'System',
+                url: 'https://spidigitalsystem.com',
+                color: 'blue',
+                icon: 'monitor'
+            },
+            {
+                id: 'app_4',
+                name: 'Website SPI',
+                description: 'Official Website SPI',
+                category: 'Website',
+                url: 'https://sekolahprogrammingindonesia.com',
+                color: 'green',
+                icon: 'globe'
+            },
+            {
+                id: 'app_5',
+                name: 'Google Drive - All Files',
+                description: 'All Documents and Files',
+                category: 'Cloud Storage',
+                url: 'https://drive.google.com/drive/folders/1hicRiGIgaoDOyuZiWbQAthk7NMme8yKU',
+                color: 'gray',
+                icon: 'drive'
+            }
+        ];
+
+        // State Management Class
+        class AppState {
+            constructor() {
+                this.apps = this.loadData('spi_apps') || defaultApps;
+                this.favorites = this.loadData('spi_favorites') || ['app_1', 'app_2', 'app_3', 'app_4'];
+                this.recent = this.loadData('spi_recent') || {}; // { appId: timestamp }
+                this.theme = this.loadData('spi_theme') || 'light';
+                
+                // If apps is empty (first load after clear), set default
+                if (this.apps.length === 0) {
+                    this.apps = defaultApps;
+                    this.saveData('spi_apps', this.apps);
+                }
+                
+                this.currentView = 'dashboard';
+                this.searchQuery = '';
+                this.currentCategory = 'All';
+                this.sortAsc = true;
+            }
+
+            // LocalStorage Helpers
+            loadData(key) {
+                try {
+                    const data = localStorage.getItem(key);
+                    return data ? JSON.parse(data) : null;
+                } catch (e) {
+                    console.error('Error loading data', e);
+                    return null;
+                }
+            }
+
+            saveData(key, data) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                } catch (e) {
+                    console.error('Error saving data', e);
+                }
+            }
+
+            // App Methods
+            getApp(id) {
+                return this.apps.find(a => a.id === id);
+            }
+
+            addApp(app) {
+                app.id = 'app_' + Date.now();
+                this.apps.push(app);
+                this.saveData('spi_apps', this.apps);
+                return app;
+            }
+
+            updateApp(updatedApp) {
+                const index = this.apps.findIndex(a => a.id === updatedApp.id);
+                if (index !== -1) {
+                    this.apps[index] = { ...this.apps[index], ...updatedApp };
+                    this.saveData('spi_apps', this.apps);
+                }
+            }
+
+            deleteApp(id) {
+                this.apps = this.apps.filter(a => a.id !== id);
+                this.saveData('spi_apps', this.apps);
+                
+                // cleanup refs
+                this.toggleFavorite(id, true); // force remove
+                if(this.recent[id]) {
+                    delete this.recent[id];
+                    this.saveData('spi_recent', this.recent);
+                }
+            }
+
+            // Favorite Methods
+            isFavorite(id) {
+                return this.favorites.includes(id);
+            }
+
+            toggleFavorite(id, forceRemove = false) {
+                const index = this.favorites.indexOf(id);
+                if (index > -1 || forceRemove) {
+                    this.favorites.splice(index, 1);
+                } else {
+                    this.favorites.push(id);
+                }
+                this.saveData('spi_favorites', this.favorites);
+                return this.isFavorite(id);
+            }
+
+            // Recent Methods
+            recordVisit(id) {
+                this.recent[id] = Date.now();
+                this.saveData('spi_recent', this.recent);
+            }
+
+            getRecentList() {
+                // Return array of apps sorted by timestamp descending
+                return Object.keys(this.recent)
+                    .map(id => ({ app: this.getApp(id), time: this.recent[id] }))
+                    .filter(item => item.app) // filter out deleted apps
+                    .sort((a, b) => b.time - a.time);
+            }
+            
+            // Theme
+            toggleTheme() {
+                this.theme = this.theme === 'light' ? 'dark' : 'light';
+                this.saveData('spi_theme', this.theme);
+                return this.theme;
+            }
+        }
+
+        const state = new AppState();
+
+        // Utility for formatting time
+        function timeAgo(timestamp) {
+            if (!timestamp) return '-';
+            const seconds = Math.floor((new Date() - timestamp) / 1000);
+            
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " tahun lalu";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " bulan lalu";
+            interval = seconds / 86400;
+            if (interval > 1) {
+                if(Math.floor(interval) === 1) return "Kemarin";
+                return Math.floor(interval) + " hari lalu";
+            }
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " jam lalu";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " menit lalu";
+            return "Baru saja";
+        }
+
+        // Clean URL for display
+        function displayUrl(url) {
+            try {
+                const u = new URL(url);
+                let host = u.hostname.replace('www.', '');
+                let path = u.pathname;
+                if(path.length > 20) path = path.substring(0, 15) + '...';
+                return (host + path).toLowerCase();
+            } catch(e) {
+                return url;
+            }
+        }
+
+        // SVG Icon Registry
+        const icons = {
+            lock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`,
+            box: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`,
+            monitor: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`,
+            globe: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`,
+            drive: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2L2 17h10l9-15H11z"></path><path d="M13 22l9-15"></path><path d="M2 17l9 15h10L12 17H2z"></path></svg>`,
+            default: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`,
+            external: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`,
+            edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`,
+            copy: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`,
+            trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`,
+            star: `<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`
+        };
+
+        function getIcon(name) {
+            return icons[name] || icons.default;
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = '';
+            if(type === 'success') icon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+            else if(type === 'error') icon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+            else icon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Clipboard helper
+        function copyToClipboard(text) {
+            const temp = document.createElement("textarea");
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand("copy");
+            document.body.removeChild(temp);
+            showToast("URL disalin ke clipboard");
+        }
+
+        const DOM = {
+            favGrid: document.getElementById('favorites-grid'),
+            allList: document.getElementById('all-websites-list'),
+            categoryFilter: document.getElementById('category-filter'),
+            searchInput: document.getElementById('search-input'),
+            secFav: document.getElementById('section-favorites'),
+            secAll: document.getElementById('section-all-list'),
+            pageTitle: document.querySelector('.page-title'),
+            pageSub: document.querySelector('.page-subtitle')
+        };
+
+        function renderCard(app) {
+            const isFav = state.isFavorite(app.id);
+            const html = `
+                <div class="app-card" data-id="${app.id}">
+                    <button class="fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); handleFavorite('${app.id}')" title="Toggle Favorite">
+                        ${icons.star}
+                    </button>
+                    <div class="app-icon-wrapper bg-${app.color}">
+                        ${getIcon(app.icon)}
+                    </div>
+                    <div class="app-info">
+                        <h3 class="app-title">${app.name}</h3>
+                        <p class="app-desc">${app.description}</p>
+                    </div>
+                    <button class="btn-visit bg-${app.color}" onclick="event.stopPropagation(); openApp('${app.id}')">
+                        Visit Website ${icons.external}
+                    </button>
+                </div>
+            `;
+            return html;
+        }
+
+        function renderTableRow(app) {
+            const lastTime = state.recent[app.id];
+            const timeStr = lastTime ? timeAgo(lastTime) : 'Belum pernah';
+            
+            return `
+                <tr data-id="${app.id}">
+                    <td>
+                        <div class="cell-website">
+                            <div class="list-icon-wrapper bg-${app.color}" style="background-color: var(--primary-light); color: var(--primary);">
+                                ${getIcon(app.icon)}
+                            </div>
+                            <div class="list-info-text">
+                                <span class="list-title">${app.name}</span>
+                                <span class="list-url">${displayUrl(app.url)}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td><div class="cell-desc">${app.description}</div></td>
+                    <td><span class="tag bg-${app.color}">${app.category}</span></td>
+                    <td><div class="cell-time">${timeStr}</div></td>
+                    <td>
+                        <div class="cell-actions">
+                            <button class="action-btn" onclick="copyToClipboard('${app.url}')" title="Copy URL">
+                                ${icons.copy}
+                            </button>
+                            <button class="action-btn" onclick="openApp('${app.id}')" title="Open Website">
+                                ${icons.external}
+                            </button>
+                            <button class="action-btn" onclick="editApp('${app.id}')" title="Edit Options">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function renderEmptyState(message) {
+            return `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function renderView() {
+            const view = state.currentView;
+            let appsToRender = [...state.apps];
+            
+            // Search Filtering
+            if (state.searchQuery) {
+                const q = state.searchQuery.toLowerCase();
+                appsToRender = appsToRender.filter(a => 
+                    a.name.toLowerCase().includes(q) || 
+                    a.description.toLowerCase().includes(q) ||
+                    a.category.toLowerCase().includes(q)
+                );
+            }
+
+            // Category Filtering
+            if (state.currentCategory !== 'All') {
+                appsToRender = appsToRender.filter(a => a.category === state.currentCategory);
+            }
+            
+            // Sorting
+            appsToRender.sort((a, b) => {
+                const nameA = a.name.toUpperCase();
+                const nameB = b.name.toUpperCase();
+                if (nameA < nameB) return state.sortAsc ? -1 : 1;
+                if (nameA > nameB) return state.sortAsc ? 1 : -1;
+                return 0;
+            });
+
+            // Update UI based on view
+            if (view === 'dashboard') {
+                DOM.secFav.style.display = 'block';
+                DOM.secAll.style.display = 'block';
+                DOM.pageTitle.textContent = 'Dashboard';
+                DOM.pageSub.textContent = 'Akses cepat ke semua website penting SPI';
+                
+                // Render Favs
+                const favApps = appsToRender.filter(a => state.isFavorite(a.id));
+                DOM.favGrid.innerHTML = favApps.length ? favApps.map(renderCard).join('') : renderEmptyState('Belum ada website favorit.');
+                
+                // Render List
+                DOM.allList.innerHTML = appsToRender.length ? appsToRender.map(renderTableRow).join('') : `<tr><td colspan="5" style="text-align:center; padding:2rem;">Tidak ada website ditemukan.</td></tr>`;
+            
+            } else if (view === 'favorites') {
+                DOM.secFav.style.display = 'block';
+                DOM.secAll.style.display = 'none';
+                DOM.pageTitle.textContent = 'Favorites';
+                DOM.pageSub.textContent = 'Website yang paling sering Anda gunakan';
+                
+                const favApps = appsToRender.filter(a => state.isFavorite(a.id));
+                DOM.favGrid.innerHTML = favApps.length ? favApps.map(renderCard).join('') : renderEmptyState('Belum ada website favorit.');
+                
+            } else if (view === 'all') {
+                DOM.secFav.style.display = 'none';
+                DOM.secAll.style.display = 'block';
+                DOM.pageTitle.textContent = 'All Websites';
+                DOM.pageSub.textContent = 'Direktori lengkap aplikasi internal SPI';
+                
+                DOM.allList.innerHTML = appsToRender.length ? appsToRender.map(renderTableRow).join('') : `<tr><td colspan="5" style="text-align:center; padding:2rem;">Tidak ada website ditemukan.</td></tr>`;
+            
+            } else if (view === 'recent') {
+                DOM.secFav.style.display = 'none';
+                DOM.secAll.style.display = 'block'; // Use table for recent
+                DOM.pageTitle.textContent = 'Recently Opened';
+                DOM.pageSub.textContent = 'Website yang baru-baru ini Anda akses';
+                
+                const recentItems = state.getRecentList();
+                let tableHtml = '';
+                if(recentItems.length === 0) {
+                    tableHtml = `<tr><td colspan="5" style="text-align:center; padding:2rem;">Belum ada riwayat aktivitas.</td></tr>`;
+                } else {
+                    // Filter based on search/category if applied
+                    let filteredRecent = recentItems;
+                    if(state.searchQuery || state.currentCategory !== 'All') {
+                         filteredRecent = recentItems.filter(item => appsToRender.some(a => a.id === item.app.id));
+                    }
+                    tableHtml = filteredRecent.map(item => renderTableRow(item.app)).join('');
+                }
+                DOM.allList.innerHTML = tableHtml || `<tr><td colspan="5" style="text-align:center; padding:2rem;">Tidak ada hasil sesuai filter.</td></tr>`;
+            }
+            
+            updateCategoryDropdown();
+            updateActiveNav();
+        }
+
+        function updateCategoryDropdown() {
+            const categories = [...new Set(state.apps.map(a => a.category))].sort();
+            let html = '<option value="All">Semua Kategori</option>';
+            categories.forEach(c => {
+                const selected = c === state.currentCategory ? 'selected' : '';
+                html += `<option value="${c}" ${selected}>${c}</option>`;
+            });
+            DOM.categoryFilter.innerHTML = html;
+        }
+
+        function updateActiveNav() {
+            document.querySelectorAll('.nav-item').forEach(el => {
+                if(el.dataset.view === state.currentView) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+        }
+
+        
+        // Handle Opening App
+        function openApp(id) {
+            const app = state.getApp(id);
+            if (!app) return;
+            
+            state.recordVisit(id);
+            
+            const overlay = document.getElementById('opening-overlay');
+            const text = document.getElementById('opening-text');
+            
+            overlay.style.backgroundColor = `var(--${app.color === 'gray' ? 'text-primary' : app.color === 'purple' ? 'primary' : app.color === 'orange' ? 'warning' : app.color === 'blue' ? 'secondary' : 'success'})`;
+            text.textContent = `Launching ${app.name}...`;
+            
+            overlay.classList.add('active');
+            
+            // Simulate launch delay for UX
+            setTimeout(() => {
+                window.open(app.url, '_blank');
+                overlay.classList.remove('active');
+                if(state.currentView === 'recent') renderView(); // update times if on recent view
+            }, 800);
+        }
+
+        // Handle Favorite Toggle
+        window.handleFavorite = function(id) {
+            const isFav = state.toggleFavorite(id);
+            showToast(isFav ? "Ditambahkan ke Favorit" : "Dihapus dari Favorit");
+            renderView();
+        }
+
+        // Apply Theme
+        function applyTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+        }
+
+        // Modal Logic
+        const modal = document.getElementById('app-modal');
+        const form = document.getElementById('app-form');
+        
+        function openModal(id = null) {
+            form.reset();
+            if (id) {
+                const app = state.getApp(id);
+                if (app) {
+                    document.getElementById('modal-title').textContent = 'Edit Website';
+                    document.getElementById('app-id').value = app.id;
+                    document.getElementById('app-name').value = app.name;
+                    document.getElementById('app-url').value = app.url;
+                    document.getElementById('app-desc').value = app.description;
+                    document.getElementById('app-category').value = app.category;
+                    document.getElementById('app-color').value = app.color;
+                    
+                    // Add delete button if edit mode
+                    let delBtn = document.getElementById('btn-delete-modal');
+                    if(!delBtn) {
+                        delBtn = document.createElement('button');
+                        delBtn.type = 'button';
+                        delBtn.id = 'btn-delete-modal';
+                        delBtn.className = 'btn btn-secondary';
+                        delBtn.style.borderColor = 'var(--danger)';
+                        delBtn.style.color = 'var(--danger)';
+                        delBtn.style.marginRight = 'auto'; // push to left
+                        delBtn.textContent = 'Delete';
+                        delBtn.onclick = () => {
+                            if(confirm(`Hapus ${app.name}?`)) {
+                                state.deleteApp(id);
+                                closeModal();
+                                renderView();
+                                showToast("Website dihapus");
+                            }
+                        };
+                        document.querySelector('.modal-footer').prepend(delBtn);
+                    }
+                }
+            } else {
+                document.getElementById('modal-title').textContent = 'Add New Website';
+                document.getElementById('app-id').value = '';
+                const delBtn = document.getElementById('btn-delete-modal');
+                if(delBtn) delBtn.remove();
+            }
+            modal.classList.add('active');
+            setTimeout(() => document.getElementById('app-name').focus(), 100);
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        window.editApp = function(id) {
+            openModal(id);
+        }
+
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    state.currentView = e.currentTarget.dataset.view;
+                    state.searchQuery = ''; // reset search on nav
+                    DOM.searchInput.value = '';
+                    // Close sidebar on mobile
+                    if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+                    renderView();
+                });
+            });
+
+            // Collection Filters
+            document.querySelectorAll('.collection-item').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    state.currentCategory = e.currentTarget.dataset.filter;
+                    state.currentView = 'all'; // Switch to list view to show results
+                    DOM.categoryFilter.value = state.currentCategory;
+                    renderView();
+                });
+            });
+
+            // Search (Debounced)
+            let searchTimeout;
+            DOM.searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    state.searchQuery = e.target.value;
+                    renderView();
+                }, 300);
+            });
+
+            // Filters & Sort
+            DOM.categoryFilter.addEventListener('change', (e) => {
+                state.currentCategory = e.target.value;
+                renderView();
+            });
+
+            document.getElementById('btn-sort').addEventListener('click', () => {
+                state.sortAsc = !state.sortAsc;
+                const btn = document.getElementById('btn-sort');
+                btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"></path></svg> ${state.sortAsc ? 'A to Z' : 'Z to A'}`;
+                renderView();
+            });
+
+            // Theme Toggle
+            document.getElementById('btn-toggle-theme').addEventListener('click', () => {
+                const newTheme = state.toggleTheme();
+                applyTheme(newTheme);
+            });
+
+            // Mobile Menu
+            document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('open');
+            });
+
+            // Modal Events
+            document.getElementById('btn-open-add-modal').addEventListener('click', () => openModal());
+            document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+            document.getElementById('btn-cancel-modal').addEventListener('click', closeModal);
+
+            document.getElementById('btn-save-modal').addEventListener('click', () => {
+                if(!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const id = document.getElementById('app-id').value;
+                const newApp = {
+                    name: document.getElementById('app-name').value,
+                    url: document.getElementById('app-url').value,
+                    description: document.getElementById('app-desc').value,
+                    category: document.getElementById('app-category').value,
+                    color: document.getElementById('app-color').value,
+                    icon: 'default' // simplistic for manual add
+                };
+
+                if (id) {
+                    newApp.id = id;
+                    state.updateApp(newApp);
+                    showToast("Website berhasil diupdate");
+                } else {
+                    state.addApp(newApp);
+                    showToast("Website ditambahkan");
+                }
+
+                closeModal();
+                renderView();
+            });
+
+            // Keyboard Shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Ctrl + K for Search
+                if (e.ctrlKey && e.key === 'k') {
+                    e.preventDefault();
+                    DOM.searchInput.focus();
+                }
+                // Ctrl + D for Dark Mode
+                if (e.ctrlKey && e.key === 'd') {
+                    e.preventDefault();
+                    const newTheme = state.toggleTheme();
+                    applyTheme(newTheme);
+                }
+                // Esc to close modal
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+            
+            // Close modal when clicking outside
+            modal.addEventListener('click', (e) => {
+                if(e.target === modal) closeModal();
+            });
+        }
+
+        // Initialize App
+        function init() {
+            applyTheme(state.theme);
+            setupEventListeners();
+            renderView();
+            
+            // Set initial sort icon text
+            document.getElementById('btn-sort').innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"></path></svg> A to Z`;
+        }
+
+        // Boot
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
