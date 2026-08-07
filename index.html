@@ -1432,6 +1432,96 @@
                 url: 'https://drive.google.com/drive/folders/1hicRiGIgaoDOyuZiWbQAthk7NMme8yKU',
                 color: 'gray',
                 icon: 'drive'
+            },
+            {
+                id: 'app_6',
+                name: 'Recordings',
+                description: 'Video and Audio Recordings',
+                category: 'Cloud Storage',
+                url: 'https://drive.google.com/drive/folders/1hz18liKdDQMwtoOhoj7hdRB-fBuCbwT9?usp=drive_link',
+                color: 'red',
+                icon: 'drive'
+            },
+            {
+                id: 'app_7',
+                name: 'Imadeo Learning Center',
+                description: 'Jakarta Learning Center Files',
+                category: 'Teaching',
+                url: 'https://drive.google.com/drive/folders/1hGB9qem0HVUuU3wrGIat0attjeO5AU3y?usp=sharing',
+                color: 'blue',
+                icon: 'drive'
+            },
+            {
+                id: 'app_8',
+                name: 'Archives',
+                description: 'Historical Data and Archives',
+                category: 'Cloud Storage',
+                url: 'https://drive.google.com/drive/folders/1k7XoHRwYCkY_6OIeTjcSzU7bieVz5yNv?usp=drive_link',
+                color: 'gray',
+                icon: 'drive'
+            },
+            {
+                id: 'app_9',
+                name: 'Digital System Docs',
+                description: 'Documentation for Digital Systems',
+                category: 'Documentation',
+                url: 'https://drive.google.com/drive/folders/1_UMi-mSKmjhE0Mp5iob5nrHs-osz0oTZ?usp=drive_link',
+                color: 'purple',
+                icon: 'drive'
+            },
+            {
+                id: 'app_10',
+                name: 'RnD',
+                description: 'Research and Development',
+                category: 'Development',
+                url: 'https://drive.google.com/drive/folders/1n1XB1sp5d2D5dQyZOH9hmWLi6Vw6I36n?usp=drive_link',
+                color: 'orange',
+                icon: 'drive'
+            },
+            {
+                id: 'app_11',
+                name: 'Business Operation',
+                description: 'Business Operations Files',
+                category: 'System',
+                url: 'https://drive.google.com/drive/folders/1BDR7LcTSZ1VOU58DWWVZUfoikTgwOacr?usp=drive_link',
+                color: 'blue',
+                icon: 'drive'
+            },
+            {
+                id: 'app_12',
+                name: 'Product Development',
+                description: 'Product Development Assets',
+                category: 'Development',
+                url: 'https://drive.google.com/drive/folders/1zVaVsouCT55Hr5_5WGoJJ01CEBT2VXI0?usp=drive_link',
+                color: 'green',
+                icon: 'drive'
+            },
+            {
+                id: 'app_13',
+                name: 'Sales and Marketing',
+                description: 'Sales and Marketing Material',
+                category: 'Marketing',
+                url: 'https://drive.google.com/drive/folders/1OmBFB4-wTg6mTZNz5roHg7YEhqCfB4bs?usp=drive_link',
+                color: 'red',
+                icon: 'drive'
+            },
+            {
+                id: 'app_14',
+                name: 'Finance',
+                description: 'Financial Documents',
+                category: 'Finance',
+                url: 'https://drive.google.com/drive/folders/1-t5x3RG1x3NBV8yJ5yMGCWiXndJ0PoPf?usp=drive_link',
+                color: 'green',
+                icon: 'drive'
+            },
+            {
+                id: 'app_15',
+                name: 'Managing Director',
+                description: 'MD Private Files',
+                category: 'System',
+                url: 'https://drive.google.com/drive/folders/1d54PY5DNMAZ2Ui_q7bR9MAvPpCJvImpO?usp=drive_link',
+                color: 'purple',
+                icon: 'drive'
             }
         ];
 
@@ -1670,6 +1760,7 @@
         function renderTableRow(app) {
             const lastTime = state.recent[app.id];
             const timeStr = lastTime ? timeAgo(lastTime) : 'Belum pernah';
+            const isFav = state.isFavorite(app.id);
             
             return `
                 <tr data-id="${app.id}">
@@ -1689,6 +1780,9 @@
                     <td><div class="cell-time">${timeStr}</div></td>
                     <td>
                         <div class="cell-actions">
+                            <button class="action-btn" onclick="handleFavorite('${app.id}')" title="${isFav ? 'Hapus dari Favorit' : 'Tambah ke Favorit'}" style="${isFav ? 'color: var(--warning); border-color: var(--warning); fill: var(--warning);' : 'fill: none; stroke: currentColor;'}">
+                                <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            </button>
                             <button class="action-btn" onclick="copyToClipboard('${app.url}')" title="Copy URL">
                                 ${icons.copy}
                             </button>
